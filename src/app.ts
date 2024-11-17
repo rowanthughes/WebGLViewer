@@ -26,7 +26,6 @@ export class App {
   private assetManager: AssetManager;
   private ambientLight: THREE.AmbientLight;
   private sunLight: THREE.DirectionalLight;
-  private params: GUIParams;
   private availableModels: { name: string; path: string }[];
   private availableShaders: ShaderType[];
 
@@ -34,7 +33,6 @@ export class App {
     this.container = container;
     this.assetManager = new AssetManager();
     ShaderFactory.initialize();
-    this.initParams();
     this.initState();
     this.initRenderer();
     this.initScene();
@@ -47,43 +45,23 @@ export class App {
     this.renderLoop();
   };
 
-  /** Initialize default GUI parameters **/
-  private initParams(): void {
+  /** Initialize the GUI State **/
+  private initState(): void {
     this.availableModels = this.assetManager.getAvailableModels();
     this.availableShaders = this.assetManager.getAvailableShaders();
 
-    this.params = {
-      wireframeVisible: true,
-      normalsVisible: true,
-      tangentsVisible: true,
-      boundingBoxVisible: true,
-      wireframeOpacity: 1,
-      color: 0xff0000,
-      sunLightColor: 0xe8c37b,
-      ambientLightColor: 0xa0a0fc,
-      bgColor: 0x242437,
-      sunLightIntensity: 1.96,
-      ambientLightIntensity: 0.82,
-      shininess: 30,
-      selectedModel: this.availableModels[0].name,
-      selectedShader: this.availableShaders[0],
-    };
-  };
-
-  /** Initialize the GUI State **/
-  private initState(): void {
     const initialState: GUIParams = {
       wireframeVisible: true,
       normalsVisible: true,
       tangentsVisible: true,
       boundingBoxVisible: true,
       wireframeOpacity: 1,
-      color: 0xff0000,
-      sunLightColor: 0xe8c37b,
-      ambientLightColor: 0xa0a0fc,
-      bgColor: 0x242437,
-      sunLightIntensity: 1.96,
-      ambientLightIntensity: 0.82,
+      color: 0xffffff,
+      sunLightColor: 0xffffff,
+      ambientLightColor: 0xe7e7ee,
+      bgColor: 0x3f3f64,
+      sunLightIntensity: 5,
+      ambientLightIntensity: 3,
       shininess: 30,
       selectedModel: this.availableModels[0].name,
       selectedShader: this.availableShaders[0],
@@ -103,7 +81,7 @@ export class App {
   /** Initialize the scene **/
   private initScene(): void {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(this.params.bgColor);
+    this.scene.background = new THREE.Color(this.state.getState().bgColor);
   };
 
   /** Initialize the camera and controls using CameraManager **/
@@ -114,14 +92,14 @@ export class App {
   /** Initialize lights **/
   private initLights(): void {
     this.ambientLight = new THREE.AmbientLight(
-      this.params.ambientLightColor,
-      this.params.ambientLightIntensity
+      this.state.getState().ambientLightColor,
+      this.state.getState().ambientLightIntensity
     );
     this.scene.add(this.ambientLight);
 
     this.sunLight = new THREE.DirectionalLight(
-      this.params.sunLightColor,
-      this.params.sunLightIntensity
+      this.state.getState().sunLightColor,
+      this.state.getState().sunLightIntensity
     );
     this.sunLight.position.set(-69, 44, 14);
     this.scene.add(this.sunLight);
@@ -131,7 +109,7 @@ export class App {
   private initManagers(): void {
     const loader = new GLTFLoader();
     this.modelManager = new ModelManager(this.scene, loader, this.state);
-    this.shaderManager = new ShaderManager(this.params.selectedShader);
+    this.shaderManager = new ShaderManager(this.state.getState().selectedShader);
   };
 
   /** Initialize GUI **/
@@ -152,15 +130,15 @@ export class App {
   /** Load the initial model **/
   private async loadInitialModel(): Promise<void> {
     const modelPath =
-      this.availableModels.find((model) => model.name === this.params.selectedModel)?.path || '';
+      this.availableModels.find((model) => model.name === this.state.getState().selectedModel)?.path || '';
     await this.modelManager.loadModel(modelPath, this.shaderManager.getCurrentShaderType(), {
-      wireframeVisible: this.params.wireframeVisible,
-      normalsVisible: this.params.normalsVisible,
-      tangentsVisible: this.params.tangentsVisible,
-      boundingBoxVisible: this.params.boundingBoxVisible,
-      wireframeOpacity: this.params.wireframeOpacity,
-      color: this.params.color,
-      shininess: this.params.shininess,
+      wireframeVisible: this.state.getState().wireframeVisible,
+      normalsVisible: this.state.getState().normalsVisible,
+      tangentsVisible: this.state.getState().tangentsVisible,
+      boundingBoxVisible: this.state.getState().boundingBoxVisible,
+      wireframeOpacity: this.state.getState().wireframeOpacity,
+      color: this.state.getState().color,
+      shininess: this.state.getState().shininess,
     });
 
     const currentModel = this.modelManager.getCurrentModel();

@@ -108,15 +108,6 @@ export class GUIManager {
         currentModel?.helpers?.wireframes?.forEach((wireframe) => {
           wireframe.material.color.set(value);
         });
-        // Update materials as well
-        currentModel?.materials.forEach((material) => {
-          const shaderType = this.shaderManager.getCurrentShaderType();
-          if (shaderType === 'Phong') {
-            (material.uniforms['diffuse'].value as THREE.Color).set(value);
-          } else if (shaderType === 'Silhouette' || shaderType === 'Toon') {
-            (material.uniforms['uColor'].value as THREE.Color).set(value);
-          }
-        });
       });
 
     // Wireframe opacity
